@@ -1,7 +1,7 @@
 package com.example.skill_sharing_backend.dto;
 
 import lombok.Data;
-
+//just comment
 @Data
 public class LearningPlanDTO {
     private Long id;
