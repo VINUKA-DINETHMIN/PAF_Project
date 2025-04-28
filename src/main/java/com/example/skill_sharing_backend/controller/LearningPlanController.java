@@ -61,7 +61,7 @@ public class LearningPlanController {
         responseDTO.setUserName(updatedPlan.getUser().getName());
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
-
+//just comment
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePlan(@PathVariable Long id) {
         planService.deletePlan(id);
