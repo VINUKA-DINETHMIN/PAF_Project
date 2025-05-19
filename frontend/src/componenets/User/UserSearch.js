@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { searchUsers, followUser, isFollowing } from '../services/api';
 import './UserSearch.css';
+import { useNavigate } from 'react-router-dom';
 
 const UserSearch = ({ currentUserId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [followStatus, setFollowStatus] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkFollowStatus = async () => {
@@ -70,7 +72,13 @@ const UserSearch = ({ currentUserId }) => {
 
       <div className="users-list">
         {users.map(user => (
-          <div key={user.id} className="user-card">
+          <div key={user.id} className="user-card" style={{cursor:'pointer', position:'relative'}}
+            onClick={e => {
+              // Prevent navigation if follow button is clicked
+              if (e.target.closest('.follow-button')) return;
+              navigate(`/profile/${user.id}`);
+            }}
+          >
             <img
               src={user.profileImage || 'https://via.placeholder.com/50'}
               alt={user.name}
@@ -85,7 +93,7 @@ const UserSearch = ({ currentUserId }) => {
               </div>
             </div>
             <button
-              onClick={() => handleFollow(user.id)}
+              onClick={e => { e.stopPropagation(); handleFollow(user.id); }}
               className={`follow-button ${followStatus[user.id] ? 'following' : ''}`}
             >
               {followStatus[user.id] ? 'Following' : 'Follow'}
