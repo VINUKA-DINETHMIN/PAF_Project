@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useRequireAuth } from '../../hooks/useRequireAuth';
 import axios from 'axios';
 import UserPosts from '../Profile/UserPosts';
+import { getFollowers, getFollowing } from '../services/api';
 import './Profile.css';
 
 const Profile = () => {
@@ -12,6 +13,11 @@ const Profile = () => {
     const [profile, setProfile] = useState(null);
     const [isFollowing, setIsFollowing] = useState(false);
     const [error, setError] = useState('');
+    const [showFollowers, setShowFollowers] = useState(false);
+    const [showFollowing, setShowFollowing] = useState(false);
+    const [followersList, setFollowersList] = useState([]);
+    const [followingList, setFollowingList] = useState([]);
+    const [loadingList, setLoadingList] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -100,6 +106,33 @@ const Profile = () => {
         }
     };
 
+    const handleShowFollowers = async () => {
+        setLoadingList(true);
+        setShowFollowers(true);
+        try {
+            const followers = await getFollowers(targetUserId);
+            setFollowersList(followers);
+        } finally {
+            setLoadingList(false);
+        }
+    };
+
+    const handleShowFollowing = async () => {
+        setLoadingList(true);
+        setShowFollowing(true);
+        try {
+            const following = await getFollowing(targetUserId);
+            setFollowingList(following);
+        } finally {
+            setLoadingList(false);
+        }
+    };
+
+    const closeModal = () => {
+        setShowFollowers(false);
+        setShowFollowing(false);
+    };
+
     if (!profile) {
         return <div className="loading">Loading...</div>;
     }
@@ -131,15 +164,54 @@ const Profile = () => {
             </div>
             
             <div className="profile-stats">
-                <div className="stat-item">
+                <div className="stat-item" style={{cursor:'pointer'}} onClick={handleShowFollowers}>
                     <span className="stat-value">{profile.followersCount || 0}</span>
                     <span className="stat-label">Followers</span>
                 </div>
-                <div className="stat-item">
+                <div className="stat-item" style={{cursor:'pointer'}} onClick={handleShowFollowing}>
                     <span className="stat-value">{profile.followingCount || 0}</span>
                     <span className="stat-label">Following</span>
                 </div>
             </div>
+
+            {showFollowers && (
+                <div className="modal-overlay" onClick={closeModal}>
+                  <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <h2>Followers</h2>
+                    {loadingList ? <p>Loading...</p> : (
+                      followersList.length === 0 ? <p>No followers found.</p> :
+                      <ul>
+                        {followersList.map(user => (
+                          <li key={user.id} style={{marginBottom:'10px'}}>
+                            <img src={user.profileImage || '/default-avatar.png'} alt={user.name} style={{width:32,height:32,borderRadius:'50%',marginRight:8}} />
+                            {user.name} <span style={{color:'#888',fontSize:'0.9em'}}>{user.email}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <button onClick={closeModal} style={{marginTop:16}}>Close</button>
+                  </div>
+                </div>
+            )}
+            {showFollowing && (
+                <div className="modal-overlay" onClick={closeModal}>
+                  <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <h2>Following</h2>
+                    {loadingList ? <p>Loading...</p> : (
+                      followingList.length === 0 ? <p>Not following anyone.</p> :
+                      <ul>
+                        {followingList.map(user => (
+                          <li key={user.id} style={{marginBottom:'10px'}}>
+                            <img src={user.profileImage || '/default-avatar.png'} alt={user.name} style={{width:32,height:32,borderRadius:'50%',marginRight:8}} />
+                            {user.name} <span style={{color:'#888',fontSize:'0.9em'}}>{user.email}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <button onClick={closeModal} style={{marginTop:16}}>Close</button>
+                  </div>
+                </div>
+            )}
 
             {error && <div className="error-message">{error}</div>}
 
