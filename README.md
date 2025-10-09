@@ -1,2 +1,2 @@
 # PAF_Project
-java
+React based client web application
